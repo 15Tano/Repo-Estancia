@@ -13,12 +13,15 @@ class Vecino extends Model
         'nombre',
         'calle',
         'numero_casa',
-        'numero_tag',
     ];
 
     public function pagos()
-{
-    return $this->hasMany(\App\Models\Pago::class);
-}
+    {
+        return $this->hasMany(\App\Models\Pago::class);
+    }
 
+    public function tags()
+    {
+        return $this->belongsToMany(\App\Models\Tag::class, 'tag_vecino')->sold();
+    }
 }

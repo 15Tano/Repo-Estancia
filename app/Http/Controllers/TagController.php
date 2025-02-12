@@ -10,21 +10,19 @@ class TagController extends Controller
 {
     public function index()
     {
-        return response()->json(Tag::with('vecino')->get());
+        return response()->json(Tag::with('vecinos')->get());
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'codigo' => 'required|unique:tags',
-            'vecino_id' => 'nullable|exists:vecinos,id'
-        ]);
+    'codigo' => 'required|unique:tags',
+    ]);
 
         $tag = Tag::create([
-            'codigo' => $request->codigo,
-            'activo' => false,
-            'vecino_id' => $request->vecino_id
-        ]);
+    'codigo' => $request->codigo,
+    'activo' => false,
+    ]);
 
         return response()->json($tag);
     }
@@ -48,28 +46,38 @@ class TagController extends Controller
     }
 
     /**
-     * Activar/Desactivar TAG según pagos del vecino
+     * Activar/Desactivar TAG manualmente
      */
     public function toggle($id)
     {
         $tag = Tag::findOrFail($id);
 
-        if (!$tag->vecino) {
-            return response()->json(['error' => 'Este tag no está asignado a un vecino'], 400);
-        }
+        $tag->activo = !$tag->activo; // alterna activación
+        $tag->save();
+        return response()->json([
+            'message' => $tag->activo ? 'TAG activado' : 'TAG desactivado',
+            'tag' => $tag
+        ]);
+    }
 
-        // Revisar si el vecino tiene algún pago vigente
-        $tienePago = $tag->vecino->pagos()->where('estado', 'Pagado')->exists();
+    // New method to get stock (unsold tags count)
+    public function stock()
+    {
+        $stockCount = Tag::whereDoesntHave('tagSale')->count();
+        return response()->json(['stock' => $stockCount]);
+    }
 
-        if ($tienePago) {
-            $tag->activo = !$tag->activo; // alterna activación
-            $tag->save();
-            return response()->json([
-                'message' => $tag->activo ? 'TAG activado' : 'TAG desactivado',
-                'tag' => $tag
-            ]);
-        }
+    // New method to get total sales amount
+    public function totalSales()
+    {
+        $total = \App\Models\TagSale::sum('price');
+        return response()->json(['total_sales' => $total]);
+    }
 
-        return response()->json(['error' => 'El vecino no tiene pagos vigentes'], 400);
+    // New method to get sales registry
+    public function sales()
+    {
+        $sales = \App\Models\TagSale::with('tag')->get();
+        return response()->json($sales);
     }
 }
