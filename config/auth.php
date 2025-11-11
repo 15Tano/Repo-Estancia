@@ -3,8 +3,8 @@
 return [
 
     /*
-    |--------------------------------------------------------------------------
-    | Authentication Defaults 
+    |-------------------------------------------------------------------------- 
+    | Authentication Defaults White Sosa
     |--------------------------------------------------------------------------
     |
     | This option defines the default authentication "guard" and password
